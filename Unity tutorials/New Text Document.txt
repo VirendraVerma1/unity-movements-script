@@ -1,0 +1,13 @@
+private float thrusterForce=1000f;
+private Rigidbody rb;
+
+Vector3 _thrusterForce = Vector3.zero;
+		
+		if (Input.GetButton ("Jump")) {
+			_thrusterForce = Vector3.up * thrusterForce;//vector3.up means(0,1,0) means transformation
+			
+		}
+
+if (_thrusterForce != Vector3.zero) {
+			rb.AddForce (_thrusterForce * Time.fixedDeltaTime,ForceMode.Acceleration);
+		}

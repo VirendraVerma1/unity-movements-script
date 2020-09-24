@@ -1,0 +1,67 @@
+using UnityEngine;
+using System.Collections;
+
+public class MovementControl : MonoBehaviour {
+
+	Rigidbody rbody;
+	public Vector3 COM = new Vector3 (0, 0, 0);
+	public WheelCollider[] wc;
+
+	public int wcTorquelength;
+	public int wcdelerationSpeedLength;
+	public bool BreakAllowed;
+
+	public float m_torque=2500f;
+	public float msteer = 25f;
+	public float m_Brake=10000f;
+	public float m_DecelerationSpeed = 1000f;
+	void Start () {
+		rbody = GetComponent<Rigidbody> ();
+		rbody.centerOfMass = COM;
+	}
+
+	void Update()
+	{
+		HandBreak ();
+	}
+
+	void FixedUpdate()
+	{
+		for (int i = 0; i < wcTorquelength; i++) {
+			wc [i].motorTorque = Input.GetAxis ("Vertical") * m_torque;
+		}
+		wc [0].steerAngle = Input.GetAxis ("Horizontal") * msteer;
+		wc [1].steerAngle = Input.GetAxis ("Horizontal") * msteer;
+
+		DecelerationSpeed ();
+	}
+
+	void DecelerationSpeed (){
+		if (!BreakAllowed && Input.GetButton ("Vertical") == false) {
+			for (int i = 0; i <wcdelerationSpeedLength; i++) {
+				wc [i].brakeTorque = m_DecelerationSpeed;
+				wc [i].motorTorque = 0;
+			}
+		}
+	}
+
+	private void HandBreak()
+	{
+		if (Input.GetKey (KeyCode.Space)) {
+			BreakAllowed = true;
+		} else {
+			BreakAllowed = false;
+		}
+		if (BreakAllowed) {
+
+			for (int i = 0; i < wcTorquelength; i++) {
+				wc [i].brakeTorque = m_Brake;
+				wc [i].motorTorque = 0f;
+			}
+		} else if(!BreakAllowed&&Input.GetButton("Vertical")==true){
+			for (int i = 0; i < wcTorquelength; i++) {
+				wc [i].brakeTorque = 0f;
+		}
+	}
+}
+}

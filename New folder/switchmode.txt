@@ -1,0 +1,188 @@
+using UnityEngine;
+using System.Collections;
+
+public class SwitchMode : MonoBehaviour {
+
+	public GameObject bMW;
+	public GameObject playercarcamera;
+	public GameObject bugattifollowercamera;
+	public GameObject mesattifollowercamera;
+	public GameObject skycarfollowercamera;
+	public GameObject player;
+	public GameObject playerEthan;
+	public GameObject playerStartPos;
+	public GameObject playerInnercarPos;
+	public GameObject playerOtherSeatPos;
+	public GameObject particleaboveDoor;
+	public GameObject particleaboveDoorPos;
+
+	private bool triggerchecker;
+	private bool triggerchecker1;
+	private bool playerseatedonseatchecker;
+
+	// Use this for initialization
+	void Start () {
+		bMW.GetComponent<MovementControl> ().enabled = false;
+	}
+	
+	// Update is called once per frame
+	void Update () {
+
+		triggerchecker = GameObject.Find ("Triggerbox").GetComponent<Trigger> ().BMWTrigger;
+		triggerchecker1 = GameObject.Find ("Triggerbox1").GetComponent<Trigger> ().BMWTrigger;
+		playerseatedonseatchecker=GameObject.Find ("playerseated").GetComponent<Triggerseated> ().playerseatedonseat;
+
+		//print (triggerchecker + "door");
+		//print (playerseatedonseatchecker + "seated");
+
+
+
+
+
+		if(Input.GetKey(KeyCode.Keypad1))
+		{
+			bMW.GetComponent<MovementControl> ().enabled = false;
+
+			player.SetActive (false);
+
+			//cameras
+
+			playercarcamera.SetActive (false);
+			bugattifollowercamera.SetActive (true);
+			mesattifollowercamera.SetActive (false);
+			skycarfollowercamera.SetActive (false);
+
+		
+
+			//transformations
+		}
+
+		else if(Input.GetKey(KeyCode.Keypad2))
+		{
+			bMW.GetComponent<MovementControl> ().enabled = false;
+
+			player.SetActive (false);
+
+			//cameras
+
+			playercarcamera.SetActive (false);
+			bugattifollowercamera.SetActive (false);
+			mesattifollowercamera.SetActive (true);
+			skycarfollowercamera.SetActive (false);
+
+
+		}
+
+		else if(Input.GetKey(KeyCode.Keypad3))
+		{
+			bMW.GetComponent<MovementControl> ().enabled = false;
+
+			player.SetActive (false);
+
+			//cameras
+
+			playercarcamera.SetActive (false);
+			bugattifollowercamera.SetActive (false);
+			mesattifollowercamera.SetActive (false);
+			skycarfollowercamera.SetActive (true);
+
+
+		}
+
+		else if(Input.GetKey(KeyCode.Keypad4))
+		{
+			bMW.GetComponent<MovementControl> ().enabled = false;
+
+			player.SetActive (false);
+
+			//cameras
+
+			playercarcamera.SetActive (true);
+			bugattifollowercamera.SetActive (false);
+			mesattifollowercamera.SetActive (false);
+			skycarfollowercamera.SetActive (false);
+
+
+		}
+
+
+		else if(Input.GetKey(KeyCode.Keypad5))
+		{
+			bMW.GetComponent<MovementControl> ().enabled = false;
+
+			player.SetActive (true);
+
+			//cameras
+
+			playercarcamera.SetActive (false);
+			bugattifollowercamera.SetActive (false);
+			mesattifollowercamera.SetActive (false);
+			skycarfollowercamera.SetActive (false);
+
+
+		}
+
+
+
+
+
+
+
+	
+
+		if (Input.GetKey (KeyCode.E)&&(triggerchecker==true||triggerchecker1==true)&&playerseatedonseatchecker==false) {
+
+
+
+			//print ("seat pebaitha hai");
+
+			//bMW.GetComponent<Rigidbody> ().isKinematic = false;
+			bMW.GetComponent<MovementControl> ().enabled = true;
+
+			player.SetActive (false);
+
+
+			playercarcamera.SetActive (true);
+			bugattifollowercamera.SetActive (false);
+			mesattifollowercamera.SetActive (false);
+			skycarfollowercamera.SetActive (false);
+
+
+			playerEthan.SetActive (true);
+
+			player.transform.position = playerStartPos.transform.position;
+			particleaboveDoor.transform.position = particleaboveDoorPos.transform.position;
+			playerEthan.transform.position = playerInnercarPos.transform.position;
+
+
+			triggerchecker = false;
+			playerseatedonseatchecker = true;
+
+		} else if (Input.GetKey (KeyCode.E)&&(triggerchecker==false||triggerchecker1==false)&&playerseatedonseatchecker==true) {
+
+
+
+			//print ("bahar hai player");
+			
+			//bMW.GetComponent<Rigidbody> ().isKinematic = true;
+			bMW.GetComponent<MovementControl> ().enabled = false;
+
+			playercarcamera.SetActive (false);
+			bugattifollowercamera.SetActive (false);
+			mesattifollowercamera.SetActive (false);
+			skycarfollowercamera.SetActive (false);
+
+			player.SetActive (true);
+			//playerEthan.SetActive (false);
+			player.transform.position = playerStartPos.transform.position;
+
+			playerEthan.transform.position = playerOtherSeatPos.transform.position;
+
+			triggerchecker = true;
+			playerseatedonseatchecker = false;
+		
+
+
+		}
+	}
+}

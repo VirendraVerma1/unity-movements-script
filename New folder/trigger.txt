@@ -1,0 +1,25 @@
+using UnityEngine;
+using System.Collections;
+
+public class Trigger : MonoBehaviour {
+
+	public bool BMWTrigger;
+
+	void OnTriggerEnter(Collider other)
+	{
+		BMWTrigger = true;
+		//print ("enter on door");
+	}
+
+	void OntriggerStay(Collider other)
+	{
+		BMWTrigger = true;
+		//print ("stay on door");
+	}
+
+	void OnTriggerExit(Collider other)
+	{
+		BMWTrigger = false;
+		//print ("exited on door");
+	}
+}

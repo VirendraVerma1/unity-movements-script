@@ -1,0 +1,36 @@
+using UnityEngine;
+using System.Collections;
+using UnityStandardAssets.Vehicles.Car;
+using System.Collections.Generic;
+
+public class RaceController : MonoBehaviour {
+
+	private bool raceStarted;
+	GameObject[] AICars;
+
+	// Use this for initialization
+	void Start () {
+		AICars = GameObject.FindGameObjectsWithTag ("AICar");
+		foreach (GameObject car in AICars) {
+			car.GetComponent<CarAIControl> ().enabled = false;
+		}
+			
+	}
+
+
+	
+	// Update is called once per frame
+	void Update () {
+
+
+		if(!raceStarted&&raceStarted==true)
+		{
+			foreach(GameObject car in AICars)
+			{
+				car.GetComponent<CarAIControl> ().enabled = true;
+
+			}
+			raceStarted = true;
+		}
+	}
+}

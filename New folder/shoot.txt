@@ -1,0 +1,73 @@
+using UnityEngine;
+using System.Collections;
+
+public class shoot : MonoBehaviour {
+
+	private float fireRate=0.3f;
+	private float nextFire;
+	static Animator anim;
+	public float propulsionForceBullet=100f;
+	public float propulsionForceGrenade=20f;
+
+	public GameObject bulletPrefab;
+	private Transform bulletLocation;
+
+	public GameObject grenadePrefab;
+	private Transform grenadeLocation;
+
+	//public float fixedRotation = 5;
+
+	// Use this for initialization
+	void Start () {
+		anim = GetComponent<Animator> ();
+		bulletLocation = transform;
+		grenadeLocation = transform;
+	}
+	
+	// Update is called once per frame
+	void Update () {
+		CheckForInput ();
+	}
+
+	void CheckForInput ()
+	{
+		if (Input.GetKey (KeyCode.Mouse0)&&Time.time>nextFire) {
+			nextFire = Time.time + fireRate;
+			anim.SetBool ("Shoot", true);
+			anim.SetBool ("DoOpen", false);
+			anim.SetBool ("DoReload", false);
+
+			GameObject go = (GameObject)Instantiate (bulletPrefab, bulletLocation.TransformPoint (0.5f, 0, 0.5f), bulletLocation.rotation);
+			go.GetComponent<Rigidbody> ().AddForce (bulletLocation.forward*propulsionForceBullet,ForceMode.Impulse);
+			Destroy (go, 10);
+
+			/*if (countBullet>=60) {
+				
+				anim.SetBool ("Shoot", false);
+				anim.SetBool ("DoOpen", false);
+				anim.SetBool ("DoReload", true);
+				countBullet = 1;
+			}*/
+
+		} 
+
+		else if(Input.GetKey (KeyCode.Mouse1)&&Time.time>nextFire){
+			nextFire = Time.time + fireRate;
+			GameObject gre = (GameObject)Instantiate (grenadePrefab, grenadeLocation.TransformPoint (0.5f, 0, 0.5f), grenadeLocation.rotation);
+			gre.GetComponent<Rigidbody> ().AddForce (grenadeLocation.forward*propulsionForceGrenade,ForceMode.Impulse);
+			Destroy (gre, 10);
+		}
+
+
+		else {
+			anim.SetBool ("Shoot", false);
+			anim.SetBool ("DoOpen", false);
+			anim.SetBool ("DoReload", false);
+		}
+		if (Input.GetKey (KeyCode.R)) {
+			anim.SetBool ("Shoot", false);
+			anim.SetBool ("DoOpen", false);
+			anim.SetBool ("DoReload", true);
+		}
+	}
+}

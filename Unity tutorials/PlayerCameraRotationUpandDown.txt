@@ -1,0 +1,15 @@
+private Camera cam;
+private Rigidbody rb;
+
+float _xRot=Input.GetAxisRaw("Mouse Y");
+
+float _cameraRotationx = _xRot* looksenstivity;
+
+if (cam != null) {
+			//cam.transform.Rotate (-cameraRotation);//just pasting the camera rotaiton from the given input - is to make opposite vector
+		
+			//new rotational
+			currentCameraRotationx-=cameraRotationx;
+			currentCameraRotationx = Mathf.Clamp (currentCameraRotationx, -cameraRotationLimit, cameraRotationLimit);
+			cam.transform.localEulerAngles = new Vector3 (currentCameraRotationx, 0f, 0f);
+		}

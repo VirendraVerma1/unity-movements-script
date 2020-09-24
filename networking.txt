@@ -1,0 +1,27 @@
+Making any game multiplayer
+
+1-Make an empty game object name it network
+
+2-add network manager to it
+
+3- add network hud to it
+
+4-go to the player and add network identity
+
+5-make your player as a prefab
+
+6-drag that prefab to the network manager ,that is the empty gameobject
+
+7-make the spawn point if you want
+
+	-make the empty game objects and name it spawn points
+
+	-add the network startpos component on every spawn point empty game objects
+
+	-then go to the network manager script then chang thw spawn from random to the robin round 
+
+8-write the script for disabling the camera D:\Videos\Unity\FPSmultiplayer  episode2 20:00
+
+9-add the network transform script in player
+
+10-for inner movement add network child transform in player

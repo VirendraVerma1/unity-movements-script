@@ -1,0 +1,11 @@
+private float speed=5f;
+private Rigidbody rb;
+
+float _yRot=Input.GetAxisRaw("Mouse X");                                       //geting the mouse activity
+
+Vector3 _rotation = new Vector3 (0f, _yRot, 0f) * looksenstivity;            //puting that activity in the form of vector
+
+void FixedUpdate{
+rb.MoveRotation (rb.rotation * Quaternion.Euler (_rotation));
+
+}

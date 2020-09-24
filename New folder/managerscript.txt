@@ -1,0 +1,144 @@
+using UnityEngine;
+using System.Collections;
+using UnityStandardAssets.Characters.FirstPerson;
+using UnityEngine.UI;
+using UnityStandardAssets.Vehicles.Car;
+using System.Collections.Generic;
+
+
+public class ManagerScript : MonoBehaviour {
+
+	[SerializeField] private GameObject pausePannel;
+	[SerializeField] private GameObject countdownPannel;
+
+	public FirstPersonController playerController;
+
+
+	//buttons
+
+	public Button resumeButton;
+	public Button restartButton;
+	public Button mainmenuButton;
+
+	//CountDown Text
+
+	public Text countDown;
+	private float startcounter=3; 
+	private string go="GO";
+
+	//race start
+
+	private bool raceStarted;
+	GameObject[] AICars;
+
+	//activating playercar
+	public GameObject bMW;
+
+	// Use this for initialization
+	void Start () {
+		pausePannel.SetActive (false);
+		countdownPannel.SetActive (true);
+
+		//buttons importation
+
+		Button btnresume = resumeButton.GetComponent<Button> ();
+		btnresume.onClick.AddListener (TaskOnClick);
+
+
+		//AI cars
+		AICars = GameObject.FindGameObjectsWithTag ("AICar");
+		foreach (GameObject car in AICars) {
+			car.GetComponent<CarAIControl> ().enabled = false;
+		}
+
+		//player car
+		bMW.GetComponent<MovementControl> ().enabled = false;
+	
+	}
+	
+	// Update is called once per frame
+	void Update () {
+
+
+
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+
+			if (!pausePannel.activeInHierarchy) {
+				PauseGame ();
+			} else {
+				ContinueGame();
+			}
+
+		}
+
+		if (Mathf.RoundToInt (startcounter) >= -1) {
+			CountDownTimer ();
+
+		}
+
+
+	}
+
+	void TaskOnClick()
+	{
+		ContinueGame ();
+	}
+
+
+	void CountDownTimer ()
+	{
+		if (Mathf.RoundToInt (startcounter) == 0) {
+			countDown.text = go.ToString ();
+			startcounter = startcounter - Time.deltaTime;
+		} else if (Mathf.RoundToInt (startcounter) == -1) {
+			countdownPannel.SetActive (false);
+			raceStarted = true;
+			bMW.GetComponent<MovementControl> ().enabled = true;
+
+			if(raceStarted==true)
+			{
+				foreach(GameObject car in AICars)
+				{
+					car.GetComponent<CarAIControl> ().enabled = true;
+
+				}
+				raceStarted = true;
+			}
+
+		} else {
+			countDown.text = Mathf.RoundToInt (startcounter).ToString ();
+			startcounter = startcounter - Time.deltaTime;
+		}
+	}
+		
+
+
+	private void PauseGame ()
+	{
+		Time.timeScale = 0;
+		pausePannel.SetActive (true);
+		Cursor.visible = true;
+		Cursor.lockState = CursorLockMode.None;
+
+		countdownPannel.SetActive (false);
+
+		if (playerController != null) {
+			playerController.enabled = !playerController.enabled;
+		}
+
+	}
+
+	private void ContinueGame()
+	{
+		Time.timeScale = 1;
+		pausePannel.SetActive (false);
+		Cursor.visible = false;
+		Cursor.lockState = CursorLockMode.Locked;
+	
+
+		if (playerController != null) {
+			playerController.enabled = !playerController.enabled;
+		}
+
+	}
+}

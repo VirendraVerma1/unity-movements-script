@@ -1,0 +1,119 @@
+using System.Collections;
+ using System.Collections.Generic;
+ using UnityEngine.UI;
+ using UnityEngine;
+ public class ShootScript : MonoBehaviour
+ {
+     public GameObject Bullet;
+     public GameObject BulletEmitter;
+     public int BulletForce;
+     private float NextFire;
+     public float FireRate;
+     public float Shots, Ammoleft, full, ShotsFired, StartAmmount;
+     public AudioSource GunShot, Reload;
+     public Animator Anim;
+     public Text In, Left;
+     public bool Running, Reloading;
+ 
+     void Start()
+     {
+         Shots = StartAmmount;//Start the Clip Ammo with the Start Amount and to keep the Whole Ammo from being subtracted too much
+     }
+ 
+     void Update()
+     {
+ 
+         if (Input.GetMouseButton(0) && Time.time > NextFire && Running == false && Shots > 0) //if the Fire Button is pressed and the FrameRateTime is greater than the Next Fire value and if the character isn't running and if the Shots are greater than 0, then Fire the Weapon
+         {
+             NextFire = Time.time + FireRate;
+             Fire();
+             GunShot.Play();
+             Shots -= 1;
+             ShotsFired += 1;
+         }
+         if (Input.GetKeyDown(KeyCode.LeftShift))// If the Sprint Button is held down, set the Running bool to true and stop the player from being able to reload
+         {
+             Running = true;
+             Reloading = false;
+         }
+         if (Input.GetKeyUp(KeyCode.LeftShift))// If the Sprint Button is held down, set the Running bool to false and allow the player to reload
+         {
+             Running = false;
+         }
+         if (Running == true) //if the character is running, then stop reloading
+         {
+             StopCoroutine("ReloadingSequence");
+             Anim.SetBool("IsReloading", false);
+             Reload.Stop();
+         }
+         if(Reloading == false)//if the Reloading bool is set to false, then stop the Reloading Sequnce or if the player haden't reloaded becuase of running, then stop the Sequence from coninuing 
+         {
+             StopCoroutine("ReloadingSequence");
+         }
+ 
+         if (Input.GetKey(KeyCode.R) && Ammoleft > 0) //if the Whole Ammo is greater than 0 and the Reload button is pressed, then start the Reload Sequence
+         {
+             StartCoroutine("ReloadingSequence");
+         }
+         if (Input.GetMouseButton(0) && Shots <= 0 && Ammoleft > 0) //if the Whole Ammo is greater than 0 and if the Shots are less than or equal to 0 and the Fire Button is pressed, then start the Reload Sequence
+         {
+             StartCoroutine("ReloadingSequence");
+         }
+         if (Ammoleft <= 0)
+         {
+             Ammoleft = 0;
+         }
+         AmmoLeftIn();
+         LeftInClip();
+     }
+     void Fire()
+     {
+         if (Reloading == false)//if the player isn't reloading, then activate the Fire void to allow the player to shoot bullets
+         {
+             GameObject BulletHandeler;
+             BulletHandeler = Instantiate(Bullet, BulletEmitter.transform.position, BulletEmitter.transform.rotation) as GameObject;
+             BulletHandeler.transform.Rotate(Vector3.left * 90);
+             Rigidbody TR;
+             TR = BulletHandeler.GetComponent<Rigidbody>();
+             TR.AddForce(transform.forward * BulletForce);
+             Destroy(BulletHandeler, 1.0f);
+         }
+     }
+ 
+     IEnumerator ReloadingSequence()
+     {
+         Reload.Play();
+         Reloading = true;
+         Anim.SetBool("IsReloading", true);
+         Anim.SetBool("IsAiming", false);
+         Anim.SetBool("IsShooting", false);
+         yield return new WaitForSeconds(2.5f);
+         if(Shots > 0) //if the shots are bigger than 0, then subtract the Whole Ammo from the remainder of a the Ammo Clip to create a Full Ammo Clip
+         {
+             Ammoleft -= ShotsFired;
+             Shots = full;
+         }
+         if (Shots <= 0) //if the shots are less than or equal than 0, then refill the Empty Clip to a Full Clip abd subtract it from the Whole Ammo
+         {
+             Ammoleft -= full;
+             Shots = full;
+         }
+         if (Shots > 0 && Ammoleft < 0) //if the shots are bigger than 0 and the Whole Ammo left is less than 0, then add the last ammount of Ammo into the clip
+         {
+             Shots += Ammoleft;
+             Ammoleft -= ShotsFired;
+         }
+         Anim.SetBool("IsReloading", false);
+         ShotsFired = 0; //return the remainder to 0
+         Reloading = false;
+     }
+ 
+     void LeftInClip()
+     {
+         Left.text = "" + Shots.ToString();
+     }
+     void AmmoLeftIn()
+     {
+         In.text = "" + Ammoleft.ToString();
+     }
+ }?

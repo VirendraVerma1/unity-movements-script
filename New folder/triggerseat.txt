@@ -1,0 +1,25 @@
+using UnityEngine;
+using System.Collections;
+
+public class Triggerseated : MonoBehaviour {
+
+	public bool playerseatedonseat;
+
+	void OnTriggerEnter(Collider other)
+	{
+		playerseatedonseat = true;
+		//print ("enter on seat");
+	}
+
+	void OntriggerStay(Collider other)
+	{
+		playerseatedonseat = true;
+		//print ("stay on seat");
+	}
+
+	void OnTriggerExit(Collider other)
+	{
+		playerseatedonseat = false;
+		//print ("exited from seat");
+	}
+}
