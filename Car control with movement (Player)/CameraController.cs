@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class cameracontrolscript: MonoBehaviour {
+public class CameraController : MonoBehaviour {
  
  public Transform car;
  public float distance = 6.4f;

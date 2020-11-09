@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class secondcarmovementscript : MonoBehaviour {
+public class CarMovement : MonoBehaviour {
 
 	public Vector3 COM = new Vector3 (0, 0, 0);
 
