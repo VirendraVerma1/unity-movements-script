@@ -1,0 +1,132 @@
+string GetDataValue(string data, string index)
+    {
+        string value = data.Substring(data.IndexOf(index) + index.Length);
+        if (value.Contains("|"))
+            value = value.Remove(value.IndexOf("|"));
+        return value;
+    }
+
+    string SymbolEncoder(string str)
+    {
+        
+        str = str.Replace(",", "iyecommahaiyecommahaihaii");
+        str = str.Replace(":", "idoubledotdubledothaii");
+        str = str.Replace("|", "islashslashhaii");
+        str = str.Replace(";", "isemicolonhaisemicolonhaii");
+        
+        str = MySymbolEncoder(str,"iyenewlinehaiyenewlinehaii",92);
+        str = MySymbolEncoder(str, "iyedoublecotehaii", 34);
+        str = MySymbolEncoder(str, "iyecolonhaii", 39);
+        str = MySymbolEncoder(str, "iyebackslashhaii", 47);
+        str = MySymbolEncoder(str, "iyecurlylefthaii", 123);
+        str = MySymbolEncoder(str, "iyecurlyrighthaii", 125);
+        return str;
+    }
+
+    string SymbolDecoder(string str)
+    {
+        str += " ";
+        str = str.Replace("iyecommahaiyecommahaihaii", ",");
+        str = str.Replace("idoubledotdubledothaii", ":");
+        str = str.Replace("islashslashhaii", "|");
+        str = str.Replace("isemicolonhaisemicolonhaii", ";");
+
+        str = MySymbolDecoder(str, "iyenewlinehaiyenewlinehaii",92);
+        str = MySymbolDecoder(str, "iyedoublecotehaii", 34);
+        str = MySymbolDecoder(str, "iyecolonhaii", 39);
+        str = MySymbolDecoder(str, "iyebackslashhaii", 47);
+        str = MySymbolDecoder(str, "iyecurlylefthaii", 123);
+        str = MySymbolDecoder(str, "iyecurlyrighthaii", 125);
+        str = MySymbolDecoder(str, "iyenewlinehaiyenewlinehaii", 92);
+        str = MySymbolDecoder(str, "iyedoublecotehaii", 34);
+        str = MySymbolDecoder(str, "iyecolonhaii", 39);
+        str = MySymbolDecoder(str, "iyebackslashhaii", 47);
+        str = MySymbolDecoder(str, "iyecurlylefthaii", 123);
+        str = MySymbolDecoder(str, "iyecurlyrighthaii", 125);
+        return str;
+    }
+
+    string MySymbolEncoder(string str, string code, int ascicode)
+    {
+        int n = ascicode;
+        char sumbol = Convert.ToChar(n);
+        string newstr = "";
+        foreach (char s in str)
+        {
+            if (sumbol == s)
+            {
+                newstr += code;
+            }
+            else
+            {
+                newstr += s;
+            }
+            
+        }
+        return newstr;
+    }
+
+    string MySymbolDecoder(string str,string code,int ascicode)
+    {
+        int n = ascicode;
+        char sumbol = Convert.ToChar(n);
+        string newstr = "";
+        string newlineencode = code;
+        int c = 0;
+        string symbolchecher = "";
+        foreach (char s in str)
+        {
+            if (c < newlineencode.Length)
+            {
+                if (s == newlineencode[c])
+                {
+                    symbolchecher += s;
+                    c++;
+                }
+                else
+                {
+                    if (newlineencode == symbolchecher)
+                    {
+                        symbolchecher = "";
+                        newstr += Convert.ToChar(n);
+                    }
+                    c = 0;
+                    newstr += symbolchecher;
+                    newstr += s;
+                    symbolchecher = "";
+                }
+            }
+            else
+            {
+                if (newlineencode == symbolchecher)
+                {
+                    symbolchecher = "";
+                    newstr += Convert.ToChar(n);
+                }
+
+                c = 0;
+                newstr += symbolchecher;
+                newstr += s;
+                symbolchecher = "";
+            }
+        }
+        return newstr;
+    }
+    
+
+
+Symbol conversion
+|	-	islashslashhaii
+:	-	idoubledotdubledothaii
+;	-	isemicolonhaisemicolonhaii
+,	-	iyecommahaiyecommahaihaii
+\	-	iyenewlinehaiyenewlinehaii	92
+"	-	iyedoublecotehaii	34
+'	-	iyecolonhaii	39
+/	-	iyebackslashhaii	47
+{	-	iyecurlylefthaii	123
+}	-	iyecurlyrighthaii	125
+
+
+
+
