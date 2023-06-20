@@ -1,0 +1,2 @@
+//remove debug in bolt unity
+bolt->settings->miselleniuous->uncheck show debug info

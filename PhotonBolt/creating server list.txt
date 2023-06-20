@@ -1,0 +1,37 @@
+//creating a server list
+//create a scroll view pannel in editor
+
+public Button joinGameButtonPrefab;
+public GameObject serverListPannel;
+private List<Button> joinServerButtons=new List<Button>();
+
+public override void SessionListUpfated(Map<Guid,UdpSession> sessionList)
+{
+	ClearSessions();
+	foreach(var session in sessionList)
+	{
+		UdpSession photonSession=session.Value as UdpSession;
+		
+		Button joinGameButtonClone = Instantiate(joinGameButtonPrefab);
+		joinGameButtonClone.transform.parent=serverListPannel.transform;
+		joinGameButtonClone.transform.localPosition = new Vector3(0,0,0);
+		joinGameButtonClone.gameObject.SetActive(true);
+		
+		joinGameButtonClone.onClick.Addlistner(() => JoinGame(photonSession));
+		joinServerButtons.Add(joinGameButtonClone);
+	}
+}
+
+private void JoinGame(UdpSession photonSession)
+{
+	BoltNetwork.Connect(photonSession)
+}
+
+private void ClearSessions()
+{
+	foreach(Button button in joinServerButtons)
+	{
+		Destroy(button.gameObject);
+	}
+	joinServerButtons.Clear();
+}

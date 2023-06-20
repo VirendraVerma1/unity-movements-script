@@ -1,0 +1,101 @@
+//make some rods with tag Obstacles
+
+public class Bullet : MonoBehaviour
+{
+	[HideInInspector]
+	public Shooting shootingScript;
+	
+	private void OnCollisionEnter(Collision collision)
+	{
+		if(collision.collider.tag=="Obstacles")
+		{
+			print("hit obstacle");
+			shootingScript.scoreScipt.score.ChangeScore();
+			print("Score: "+shootingScript.score);
+			Destroy(gameObject);
+		}
+	}
+}
+
+
+public class Shooting : Bolt.EntityBehavior<ICustomCubeState>
+{
+	public Rigidbody bulletPrefab;
+	public float bulletSpeed;
+	public GameObject muzzle;
+	public Score scoreScipt;
+	
+	public override void Attached()
+	{
+		state.OnShoot = Shoot;
+	}
+	
+	private void Shoot()
+	{
+		Rigidbody bulletClone = Instantiate(bulletPrefab,muzzle.transform,this.transform.rotation);
+		bulletClone.velocity = transform.Transform.TransformDirection(new Vector3(0,0,bulletSpeed));
+		bulletClone.GetComponent<Bullet>().shootingScript =  this;
+	}
+}
+
+
+
+//make score script and add to the player
+public class Score : Bolt.EntityBehavior<ICustomCubeState>
+{
+	public int score;
+	public int obstacleValue;
+	
+	public void ChangeScore()
+	{
+		if(entity.isOwner)
+		{
+			score +=obstacleValue;
+			
+			var scoreEvent = ScoreEvent.Create();
+			scoreEvent.Message = PlayerPrefs.GetString("username")+ " scored "+ obstacleValue + " points";
+			scoreEvent.Send();
+		
+		}
+	}
+}
+
+
+
+public class PlayerJoined
+{
+	//save from attached
+	PlayerPrefs.SetString("username",Random.Range(0,9999).ToString());
+}
+
+//make an event from bolt asset
+//name ScoreEvent
+//Message as String
+
+
+//make GameCanvas class for listning events
+
+public class GameCanvas : Bolt.EntityBehavior<ICustomCubeState>
+{
+	public TextaMeshProGUI scorePopUp;
+	
+	public override void OnEvent(ScoreEvent event)
+	{
+		print(event.Message);
+		TextaMeshProGUI scorePopupClone =Instantiate(scorePopUp);
+		scorePopupClone.text=event.Message;
+		scorePopupClone.transform.parent=canvas.transform;
+		scorePopupClone.GetComponent<RectTransform>().sizeDelta=scorePopUp.GetComponent<RectTransform>().sizeDelta;
+		scorePopupClone.GetComponent<RectTransform>().localScale=scorePopUp.GetComponent<RectTransform>().localScale;
+		scorePopupClone.GetComponent<RectTransform>().position=scorePopUp.GetComponent<RectTransform>().position;
+		scorePopupClone.gameObject.SetActive(true);
+		
+		Destroy(scorePopupClone.gameObject,4f);
+	}
+}
+
+
+
+//----------------------------------------------------------------------------------
+
+//import text mesh pro
