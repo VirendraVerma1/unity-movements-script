@@ -1,0 +1,550 @@
+using System.Collections;
+using UnityEngine;
+using UnityEngine.Advertisements;
+using GoogleMobileAds.Api;
+using System;
+using UnityEngine.UI;
+
+public class AdScript : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowListener
+{
+    //server values
+    private string serverurl = "http://kreasaard.atwebpages.com/OneManArmy/adnet.php";
+    string adnetValue = "0";
+    //0 for google ads
+    //1 for unity ads
+    //2 for automatic ads selection priority to google ads
+    int googleAdLoopTurn = 1;
+    bool isOffline=true;
+
+    //---unity ads variables
+    string gameId = "4227023";
+    string mySurfacingId = "rewardedVideo";
+    public string surfacingId = "bannerPlacement";
+    public bool testMode = true;
+    private string _adUnitId = "";
+    Button _showAdButton;
+
+    //----google admob variable
+    string AppId = "ca-app-pub-4773340848320054~9968233986";
+    string RewardAdd = "ca-app-pub-3940256099942544/5224354917";//"ca-app-pub-3940256099942544/5224354917";
+    string interstitialAdd = "ca-app-pub-3940256099942544/1033173712";//"ca-app-pub-3940256099942544/1033173712";
+
+    public static AdScript Instance { get; private set; } // static singleton
+
+   void Awake()
+    {
+        _adUnitId = gameId;
+        if (Instance == null) { Instance = this; }
+        else { Destroy(gameObject); return; }
+        DontDestroyOnLoad(gameObject);
+        googleAdLoopTurn = 1;
+        isOffline=true;
+        if (Application.isEditor)
+        {
+            testMode = true;
+        }
+
+        if (!testMode)
+        {
+            RewardAdd = "ca-app-pub-4773340848320054/5106350237";
+            interstitialAdd = "ca-app-pub-4773340848320054/7568862044";
+            
+        }
+        else
+        {
+            RewardAdd = "ca-app-pub-3940256099942544/5224354917";
+            interstitialAdd = "ca-app-pub-3940256099942544/1033173712";
+        }
+
+        StartCoroutine(GetValueFromServerForAdNetwork());
+    }
+
+
+
+    //common 
+    public bool isAdLoaded()//for reaward ads
+    {
+        if (adnetValue == "0"&&!isOffline)//means google ads
+        {
+            
+            if (rewardedAd != null && rewardedAd.CanShowAd())
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if (adnetValue == "1"&&!isOffline)//means unity ads
+        {
+            if (Advertisement.isInitialized)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool isinterLoaded()
+    {
+        if (adnetValue == "0"&&!isOffline)//means google ads
+        {
+            if (interstitial != null && interstitial.CanShowAd())
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if (adnetValue == "1"&&!isOffline)//means unity ads
+        {
+            if (Advertisement.isInitialized)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public void ShowIntertesialAdsSwitch()
+    {
+        isgotReward=false;
+        if (adnetValue == "0"&&!isOffline)//means google ads inter to show
+        {
+            ShowInterstitial();
+        }
+        else if (adnetValue == "1"&&!isOffline)//means google ads inter to show
+        {
+            Advertisement.Show(surfacingId);
+        }
+    }
+
+    public void ShowRewardVideoAdsSwitch()
+    {
+        isgotReward=false;
+        if (adnetValue == "0"&&!isOffline)//means google ads reward to show
+        {
+            ShowRewardedAds();
+        }
+        else if (adnetValue == "1"&&!isOffline)//means unity ads reward to show
+        {
+            ShowRewardedVideo();
+        }
+    }
+
+    bool isgotReward=false;
+    public bool GiveRewardAfterCompletion()
+    {
+        isgotReward=true;
+        return isgotReward;
+    }
+
+    //---------------Fetch value from server
+
+    IEnumerator GetValueFromServerForAdNetwork()
+    {
+        WWW www = new WWW(serverurl);
+        yield return www;
+        if(www.text!="")
+        {
+            isOffline=false;
+            if (www.text == "0" || www.text == "1"||www.text=="2")
+                adnetValue = www.text.ToString();
+            print(adnetValue);
+            InitializeAdsAccordingtothevalue();
+        }
+    }
+
+    void InitializeAdsAccordingtothevalue()
+    {
+        if (adnetValue == "0")//means initialize google ads
+        {
+            //idea is to first download the reward ad the intertesial ads to consume less data at a time
+            RrequestRewardAd();
+            StartCoroutine(InitializeGoogleAds());
+        }
+        else if (adnetValue == "1")//means initialize unity ads
+        {
+            InitializeUnityAds();
+        }
+    }
+
+
+    //---------------Unity Ads---------------
+
+    #region unity ads initialization
+
+    void InitializeUnityAds()
+    {
+        //unity ads setup
+
+        //reward ads and intertesial ads
+        Advertisement.Initialize(_adUnitId, testMode);
+        Advertisement.Load(_adUnitId, this);
+        //banner ads initialization and show
+        //StartCoroutine(ShowBannerWhenInitialized());
+        //StartCoroutine(WaitAndShow());
+    }
+
+    #endregion
+
+    #region intertesial ads
+
+    public void ShowInterstitialAd()
+    {
+        // Check if UnityAds ready before calling Show method:
+        if (Advertisement.isInitialized)
+        {
+            Advertisement.Show(gameId, this);
+        }
+        else
+        {
+            Debug.Log("Interstitial ad not ready at the moment! Please try again later!");
+        }
+    }
+
+    #endregion 
+
+    #region reward ads
+
+    public void ShowRewardedVideo()
+    {
+        // Check if UnityAds ready before calling Show method:
+        if (Advertisement.isInitialized)
+        {
+            Advertisement.Show(mySurfacingId);
+        }
+        else
+        {
+            Debug.Log("Rewarded video is not ready at the moment! Please try again later!");
+        }
+    }
+    
+    // Implement the Show Listener's OnUnityAdsShowComplete callback method to determine if the user gets a reward:
+    public void OnUnityAdsShowComplete(string adUnitId, UnityAdsShowCompletionState showCompletionState)
+    {
+        if (adUnitId.Equals(_adUnitId) && showCompletionState.Equals(UnityAdsShowCompletionState.COMPLETED))
+        {
+            Debug.Log("Unity Ads Rewarded Ad Completed");
+            // Grant a reward.
+            GiveRewardAfterCompletion();
+        }
+    }
+ 
+    // Implement Load and Show Listener error callbacks:
+    public void OnUnityAdsAdLoaded(string placementId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void OnUnityAdsFailedToLoad(string adUnitId, UnityAdsLoadError error, string message)
+    {
+        Debug.Log($"Error loading Ad Unit {adUnitId}: {error.ToString()} - {message}");
+        // Use the error details to determine whether to try to load another ad.
+    }
+ 
+    public void OnUnityAdsShowFailure(string adUnitId, UnityAdsShowError error, string message)
+    {
+        Debug.Log($"Error showing Ad Unit {adUnitId}: {error.ToString()} - {message}");
+        // Use the error details to determine whether to try to load another ad.
+    }
+ 
+    public void OnUnityAdsShowStart(string adUnitId) { }
+    public void OnUnityAdsShowClick(string adUnitId) { }
+ 
+    void OnDestroy()
+    {
+        // Clean up the button listeners:
+        _showAdButton.onClick.RemoveAllListeners();
+    }
+    
+    #endregion
+
+    #region banner ads
+
+    IEnumerator ShowBannerWhenInitialized()
+    {
+        while (!Advertisement.isInitialized)
+        {
+            yield return new WaitForSeconds(0.5f);
+        }
+        Advertisement.Banner.SetPosition(BannerPosition.BOTTOM_CENTER);
+        Advertisement.Banner.Show(surfacingId);
+        
+    }
+
+    #endregion
+
+    //---------------Google Admob---------------
+
+    #region google ads initialze
+
+    IEnumerator InitializeGoogleAds()
+    {
+        yield return new WaitForSeconds(5);
+
+        if (rewardedAd != null && rewardedAd.CanShowAd())
+        {
+            RequestInterstitial();
+        }
+        else
+        {
+            googleAdLoopTurn++;
+            if (googleAdLoopTurn > 11)
+            {
+                adnetValue = "1";
+                InitializeAdsAccordingtothevalue();
+            }
+            else
+            {
+                StartCoroutine(InitializeGoogleAds());
+            }
+        }
+        print(googleAdLoopTurn);
+    }
+
+
+    #endregion
+
+    #region intertesial ads google
+
+    private InterstitialAd interstitial;
+
+    private void RequestInterstitial()
+    {
+        
+        string adUnitId = interstitialAdd;
+
+// Clean up the old ad before loading a new one.
+        if (interstitial != null)
+        {
+            interstitial.Destroy();
+            interstitial = null;
+        }
+
+        //Debug.Log("Loading the interstitial ad.");
+
+        // create our request used to load the ad.
+        var adRequest = new AdRequest.Builder()
+            .AddKeyword("unity-admob-sample")
+            .Build();
+
+        // send the request to load the ad.
+        InterstitialAd.Load(adUnitId, adRequest,
+            (InterstitialAd ad, LoadAdError error) =>
+            {
+                // if error is not null, the load request failed.
+                if (error != null || ad == null)
+                {
+                    //Debug.LogError("interstitial ad failed to load an ad " + "with error : " + error);
+                    return;
+                }
+
+                //Debug.Log("Interstitial ad loaded with response : "+ ad.GetResponseInfo());
+
+                interstitial = ad;
+            });
+    }
+    
+    private void RegisterEventHandlers(InterstitialAd ad)
+    {
+        // Raised when the ad is estimated to have earned money.
+        ad.OnAdPaid += (AdValue adValue) =>
+        {
+            Debug.Log(String.Format("Interstitial ad paid {0} {1}.",
+                adValue.Value,
+                adValue.CurrencyCode));
+        };
+        // Raised when an impression is recorded for an ad.
+        ad.OnAdImpressionRecorded += () =>
+        {
+            Debug.Log("Interstitial ad recorded an impression.");
+        };
+        // Raised when a click is recorded for an ad.
+        ad.OnAdClicked += () =>
+        {
+            Debug.Log("Interstitial ad was clicked.");
+        };
+        // Raised when an ad opened full screen content.
+        ad.OnAdFullScreenContentOpened += () =>
+        {
+            Debug.Log("Interstitial ad full screen content opened.");
+        };
+        // Raised when the ad closed full screen content.
+        ad.OnAdFullScreenContentClosed += () =>
+        {
+            Debug.Log("Interstitial ad full screen content closed.");
+        };
+        // Raised when the ad failed to open full screen content.
+        ad.OnAdFullScreenContentFailed += (AdError error) =>
+        {
+            Debug.LogError("Interstitial ad failed to open full screen content " +
+                           "with error : " + error);
+        };
+    }
+
+    private void RegisterReloadHandler(InterstitialAd ad)
+    {
+        // Raised when the ad closed full screen content.
+        ad.OnAdFullScreenContentClosed += ()=>
+        {
+            Debug.Log("Interstitial Ad full screen content closed.");
+
+            // Reload the ad so that we can show another as soon as possible.
+            RequestInterstitial();
+        };
+        // Raised when the ad failed to open full screen content.
+        ad.OnAdFullScreenContentFailed += (AdError error) =>
+        {
+            Debug.LogError("Interstitial ad failed to open full screen content " +
+                           "with error : " + error);
+
+            // Reload the ad so that we can show another as soon as possible.
+            RequestInterstitial();
+        };
+    }
+    
+    public void ShowInterstitial()
+    {
+        if (interstitial != null && interstitial.CanShowAd())
+        {
+            this.interstitial.Show();
+        }
+    }
+
+    #endregion
+
+    #region reward ads
+
+    private RewardedAd rewardedAd;
+
+    public void RrequestRewardAd()
+    {
+        // Clean up the old ad before loading a new one.
+        if (rewardedAd != null)
+        {
+            rewardedAd.Destroy();
+            rewardedAd = null;
+        }
+
+        //Debug.Log("Loading the rewarded ad.");
+
+        // create our request used to load the ad.
+        var adRequest = new AdRequest.Builder().Build();
+
+        // send the request to load the ad.
+        string adUnitId = RewardAdd;
+        RewardedAd.Load(adUnitId, adRequest,
+            (RewardedAd ad, LoadAdError error) =>
+            {
+                // if error is not null, the load request failed.
+                if (error != null || ad == null)
+                {
+                    //Debug.LogError("Rewarded ad failed to load an ad " +"with error : " + error);
+                    return;
+                }
+
+                //Debug.Log("Rewarded ad loaded with response : "+ ad.GetResponseInfo());
+
+                rewardedAd = ad;
+                
+            });
+    }
+    
+    
+    private void RegisterEventHandlers(RewardedAd ad)
+    {
+        // Raised when the ad is estimated to have earned money.
+        ad.OnAdPaid += (AdValue adValue) =>
+        {
+            Debug.Log(String.Format("Rewarded ad paid {0} {1}.",
+                adValue.Value,
+                adValue.CurrencyCode));
+            GiveRewardAfterCompletion();
+        };
+        // Raised when an impression is recorded for an ad.
+        ad.OnAdImpressionRecorded += () =>
+        {
+            Debug.Log("Rewarded ad recorded an impression.");
+        };
+        // Raised when a click is recorded for an ad.
+        ad.OnAdClicked += () =>
+        {
+            Debug.Log("Rewarded ad was clicked.");
+        };
+        // Raised when an ad opened full screen content.
+        ad.OnAdFullScreenContentOpened += () =>
+        {
+            Debug.Log("Rewarded ad full screen content opened.");
+        };
+        // Raised when the ad closed full screen content.
+        ad.OnAdFullScreenContentClosed += () =>
+        {
+            Debug.Log("Rewarded ad full screen content closed.");
+        };
+        // Raised when the ad failed to open full screen content.
+        ad.OnAdFullScreenContentFailed += (AdError error) =>
+        {
+            Debug.LogError("Rewarded ad failed to open full screen content " +
+                           "with error : " + error);
+        };
+    }
+    
+    private void RegisterReloadHandler(RewardedAd ad)
+    {
+        // Raised when the ad closed full screen content.
+        ad.OnAdFullScreenContentClosed += ()=>
+        {
+            Debug.Log("Rewarded Ad full screen content closed.");
+
+            // Reload the ad so that we can show another as soon as possible.
+            RrequestRewardAd();
+        };
+        // Raised when the ad failed to open full screen content.
+        ad.OnAdFullScreenContentFailed += (AdError error) =>
+        {
+            Debug.LogError("Rewarded ad failed to open full screen content " +
+                           "with error : " + error);
+
+            // Reload the ad so that we can show another as soon as possible.
+            RrequestRewardAd();
+        };
+    }
+    
+
+    public void ShowRewardedAds()
+    {
+        const string rewardMsg =
+            "Rewarded ad rewarded the user. Type: {0}, amount: {1}.";
+
+        if (rewardedAd != null && rewardedAd.CanShowAd())
+        {
+            rewardedAd.Show((Reward reward) =>
+            {
+                // TODO: Reward the user.
+                Debug.Log(String.Format(rewardMsg, reward.Type, reward.Amount));
+            });
+        }
+        
+    }
+
+    #endregion
+
+}
